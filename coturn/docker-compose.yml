@@ -1,0 +1,18 @@
+# coturn 실행. TURN 은 넓은 UDP 릴레이 포트 범위가 필요하므로 host 네트워크를 사용한다.
+services:
+  coturn:
+    image: coturn/coturn:4.6-alpine
+    container_name: mediview-coturn
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./turnserver.conf:/etc/coturn/turnserver.conf:ro
+      # turns:(TLS) 사용 시 인증서 마운트
+      # - /etc/letsencrypt/live/turn.mediview.example.com:/etc/coturn/certs:ro
+    command:
+      - -c
+      - /etc/coturn/turnserver.conf
+      - --external-ip=${EXTERNAL_IP}
+      - --realm=${TURN_REALM}
+      - --server-name=${TURN_REALM}
+      - --static-auth-secret=${TURN_SECRET}
