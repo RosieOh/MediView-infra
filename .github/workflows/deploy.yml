@@ -13,6 +13,8 @@ jobs:
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
+            # GHCR private 이미지 pull 을 위한 로그인 (GHCR_USER / read:packages PAT)
+            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_USER }}" --password-stdin
             cd ${{ secrets.DEPLOY_PATH }}
             docker compose pull
             docker compose up -d

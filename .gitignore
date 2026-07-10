@@ -1,0 +1,5 @@
+# 런타임/시크릿 (커밋 금지)
+.env
+certs/
+certbot/conf/
+certbot/www/
