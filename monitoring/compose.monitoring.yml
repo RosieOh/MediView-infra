@@ -7,6 +7,7 @@ services:
   nginx:
     volumes:
       - ./stack/nginx.grafana.conf:/etc/nginx/conf.d/grafana.conf:ro
+      - ./monitoring/nginx-secrets:/etc/nginx/secrets:ro   # grafana.htpasswd (gitignore)
 
   prometheus:
     image: prom/prometheus:v2.55.0
@@ -30,6 +31,7 @@ services:
       GF_USERS_ALLOW_SIGN_UP: "false"
       GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL:-https://grafana.mediview.example.com}
       GF_SERVER_DOMAIN: ${GRAFANA_DOMAIN:-grafana.mediview.example.com}
+      GF_AUTH_BASIC_ENABLED: "false"   # nginx basic-auth 와 충돌 방지(Grafana 는 세션 로그인 사용)
     volumes:
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
       - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro

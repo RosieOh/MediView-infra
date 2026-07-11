@@ -12,13 +12,18 @@ global:
 
 route:
   receiver: "default"
-  group_by: ["alertname"]
+  group_by: ["alertname", "severity", "job"]
   group_wait: 30s
   group_interval: 5m
   repeat_interval: 4h
   routes:
     - matchers: ['severity="critical"']
       receiver: "critical"
+      group_wait: 10s          # critical 은 빠르게 통지
+      repeat_interval: 1h
+    - matchers: ['severity="warning"']
+      receiver: "default"
+      repeat_interval: 6h      # warning 은 덜 자주 반복
 
 receivers:
   - name: "default"
@@ -41,3 +46,14 @@ receivers:
     email_configs:
       - to: "oncall@mediview.example.com"
         send_resolved: true
+
+# 억제 규칙: 중복/파생 알림 노이즈 감소
+inhibit_rules:
+  # 타겟 자체가 다운이면 그 인스턴스의 다른 경고/치명 알림은 억제(원인 하나만 통지)
+  - source_matchers: ['alertname="TargetDown"']
+    target_matchers: ['severity=~"warning|critical"']
+    equal: ["instance"]
+  # 같은 알림에 critical 이 이미 있으면 동일 알림의 warning 은 억제
+  - source_matchers: ['severity="critical"']
+    target_matchers: ['severity="warning"']
+    equal: ["alertname"]
