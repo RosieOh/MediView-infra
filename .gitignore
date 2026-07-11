@@ -15,3 +15,6 @@ monitoring/alertmanager/secrets/*
 # Grafana nginx basic-auth htpasswd — .example 만 커밋
 monitoring/nginx-secrets/*
 !monitoring/nginx-secrets/*.example
+
+# rclone 오프사이트 백업 설정(자격증명 포함) — .example 만 커밋
+backup/rclone.conf

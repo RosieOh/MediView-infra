@@ -103,8 +103,18 @@ services:
     expose:
       - "9115"
 
+  # 상태 페이지 / 업타임 모니터. 로컬 바인딩(외부 노출은 nginx 서브도메인 권장).
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    restart: unless-stopped
+    volumes:
+      - kuma-data:/app/data
+    ports:
+      - "127.0.0.1:3801:3001"
+
 volumes:
   prometheus-data:
   grafana-data:
   loki-data:
   alertmanager-data:
+  kuma-data:

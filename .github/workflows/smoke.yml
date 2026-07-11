@@ -1,0 +1,28 @@
+name: smoke
+on:
+  schedule:
+    - cron: "0 */6 * * *"      # 6시간마다 정기 스모크
+  workflow_dispatch:
+
+jobs:
+  k6:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Guard (URL 미설정 시 스킵)
+        id: guard
+        run: |
+          if [ -z "${{ vars.LOADTEST_BASE_URL }}" ]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "vars.LOADTEST_BASE_URL 미설정 — 스킵합니다. (Settings→Variables 에 추가)"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Run k6 smoke
+        if: steps.guard.outputs.run == 'true'
+        uses: grafana/k6-action@v0.3.1
+        with:
+          filename: loadtest/k6-smoke.js
+        env:
+          BASE_URL: ${{ vars.LOADTEST_BASE_URL }}
+          TARGET_PATH: /actuator/health

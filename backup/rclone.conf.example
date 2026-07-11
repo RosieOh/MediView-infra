@@ -1,0 +1,13 @@
+# rclone 원격 설정 예시. 실제 파일 backup/rclone.conf 로 복사(커밋 금지).
+# 원격명(예: s3remote)은 compose 의 RCLONE_REMOTE 와 일치해야 한다: RCLONE_REMOTE=s3remote:mediview-backups
+#
+# 참고: rclone config  로 대화식 생성 후 그 rclone.conf 를 여기에 두는 것을 권장.
+
+[s3remote]
+type = s3
+provider = AWS
+env_auth = false
+access_key_id = CHANGE-ME
+secret_access_key = CHANGE-ME
+region = ap-northeast-2
+storage_class = STANDARD_IA

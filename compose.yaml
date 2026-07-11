@@ -115,5 +115,19 @@ services:
       - ./backups:/backups
     entrypoint: ["/bin/sh", "/usr/local/bin/backup.sh"]
 
+  # 오프사이트 백업(선택): ./backups 를 rclone 원격(S3/GDrive 등)으로 주기 동기화.
+  # 활성화:  docker compose --profile offsite up -d   (backup/rclone.conf 필요)
+  offsite-backup:
+    image: rclone/rclone:1
+    restart: unless-stopped
+    profiles: ["offsite"]
+    depends_on: [db-backup]
+    environment:
+      RCLONE_REMOTE: ${RCLONE_REMOTE:?rclone 원격 경로 예: s3remote:mediview-backups}
+    volumes:
+      - ./backup/rclone.conf:/config/rclone/rclone.conf:ro
+      - ./backups:/data:ro
+    entrypoint: ["/bin/sh", "-c", "while :; do rclone sync /data \"$$RCLONE_REMOTE\" --stats-one-line; sleep 6h; done"]
+
 volumes:
   db-data:

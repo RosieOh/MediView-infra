@@ -160,4 +160,19 @@ docker compose exec db-backup sh /usr/local/bin/backup.sh
 gunzip -c backups/mediview-YYYYmmdd-HHMMSS.sql.gz | \
   docker compose exec -T mariadb mariadb -u"$DB_USER" -p"$DB_PASSWORD" "$DB_NAME"
 ```
-> `./backups` 는 `.gitignore` 처리. 실서비스는 오프사이트(S3 등) 동기화를 추가로 권장합니다.
+> `./backups` 는 `.gitignore` 처리.
+
+### 오프사이트 백업 (rclone → S3 등)
+`offsite-backup` 서비스(프로파일 `offsite`)가 `./backups` 를 rclone 원격으로 6시간마다 동기화합니다.
+```bash
+cp backup/rclone.conf.example backup/rclone.conf   # 자격증명 입력(커밋 금지)
+# .env 에 RCLONE_REMOTE=s3remote:mediview-backups
+docker compose --profile offsite up -d offsite-backup
+```
+
+### 정기 스모크 (k6 스케줄)
+`.github/workflows/smoke.yml` 이 6시간마다 k6 스모크를 실행합니다.
+저장소 Variables 에 `LOADTEST_BASE_URL`(예: `https://api.mediview.example.com`)을 설정하면 활성화됩니다(미설정 시 스킵).
+
+### 상태 페이지 / 업타임 (uptime-kuma)
+모니터링 오버레이에 `uptime-kuma`(로컬 `127.0.0.1:3801`) 포함. 외부 노출은 nginx 서브도메인(status.*)으로 프록시 권장.
