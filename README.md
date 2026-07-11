@@ -75,7 +75,27 @@ docker compose -f compose.yaml -f monitoring/compose.monitoring.yml up -d
 | cAdvisor / node-exporter | 컨테이너 / 호스트 메트릭 |
 
 - Grafana 접속: `http://127.0.0.1:3300` (초기 admin 비번 `GRAFANA_ADMIN_PASSWORD`). 외부 노출은 nginx 서브도메인으로 프록시하세요.
-- 백엔드 메트릭은 actuator + `micrometer-registry-prometheus` 의존성이 있어야 수집됩니다(없으면 backend job 만 down).
+- 백엔드 메트릭은 actuator + `micrometer-registry-prometheus` 로 수집됩니다 (백엔드에 반영 완료).
+
+### 기본 대시보드 (자동 로드)
+Grafana 실행 시 `MediView` 폴더에 다음 대시보드가 자동 프로비저닝됩니다.
+| 대시보드 | 내용 |
+|----------|------|
+| **MediView · JVM / App** | Heap, HTTP req/s, GC, 스레드, CPU (micrometer) |
+| **MediView · Containers** | 컨테이너 CPU/메모리/네트워크 (cAdvisor) |
+
+### 알림 (Alertmanager · Slack/이메일)
+Prometheus 규칙(`monitoring/prometheus/alerts.yml`) 위반 시 Alertmanager 가 Slack/이메일로 알립니다.
+기본 규칙: 타겟/백엔드 다운, 컨테이너 CPU 과다, JVM heap 90%+, 5xx 비율 5%+.
+
+**설정 (비밀값은 파일로 주입, 커밋 제외):**
+```bash
+# Slack Webhook URL / SMTP 비밀번호를 secrets 파일로
+echo 'https://hooks.slack.com/services/…' > monitoring/alertmanager/secrets/slack_url
+echo 'smtp-password'                       > monitoring/alertmanager/secrets/smtp_password
+# monitoring/alertmanager/alertmanager.yml 의 도메인/채널/수신자도 실제 값으로 수정
+```
+비-비밀 항목(smtp_smarthost, from, 채널 `#mediview-alerts`, 수신자)은 `alertmanager.yml` 에서 수정하세요.
 
 ## 스테이징 / 프로덕션 분리
 베이스 `compose.yaml` + 환경별 오버레이 + `--env-file` 로 분리합니다. 이미지 태그는 `IMAGE_TAG` 로 제어합니다.

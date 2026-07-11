@@ -8,6 +8,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
       - prometheus-data:/prometheus
     command:
       - --config.file=/etc/prometheus/prometheus.yml
@@ -24,6 +25,7 @@ services:
       GF_USERS_ALLOW_SIGN_UP: "false"
     volumes:
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
       - grafana-data:/var/lib/grafana
     ports:
       - "127.0.0.1:3300:3000"   # 로컬 바인딩. 외부 노출은 nginx(별도 서브도메인)로.
@@ -71,7 +73,18 @@ services:
     expose:
       - "9100"
 
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - ./monitoring/alertmanager/secrets:/etc/alertmanager/secrets:ro   # slack_url, smtp_password (gitignore)
+      - alertmanager-data:/alertmanager
+    expose:
+      - "9093"
+
 volumes:
   prometheus-data:
   grafana-data:
   loki-data:
+  alertmanager-data:

@@ -6,3 +6,7 @@
 certs/
 certbot/conf/
 certbot/www/
+
+# Alertmanager 비밀값 (slack_url / smtp_password) — .example 만 커밋
+monitoring/alertmanager/secrets/*
+!monitoring/alertmanager/secrets/*.example
