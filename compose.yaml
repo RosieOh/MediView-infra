@@ -97,5 +97,23 @@ services:
       - --server-name=${TURN_REALM}
       - --static-auth-secret=${TURN_SECRET:?}
 
+  # mariadb 정기 백업(일 1회 덤프 + gzip) + 보존기간 경과분 자동 삭제 → ./backups
+  db-backup:
+    image: mariadb:11
+    restart: unless-stopped
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    environment:
+      DB_HOST: mariadb
+      DB_NAME: ${DB_NAME:-mediview}
+      DB_USER: ${DB_USER:-mediview}
+      DB_PASSWORD: ${DB_PASSWORD:?}
+      RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-7}
+    volumes:
+      - ./backup/backup.sh:/usr/local/bin/backup.sh:ro
+      - ./backups:/backups
+    entrypoint: ["/bin/sh", "/usr/local/bin/backup.sh"]
+
 volumes:
   db-data:

@@ -133,3 +133,31 @@ docker compose --env-file .env.staging -f compose.yaml -f compose.staging.yml up
 ```
 - `compose.prod.yml` / `compose.staging.yml`: 로그 로테이션(json-file) + 프로젝트명 분리(`mediview` / `mediview-staging`).
 - 실제 `.env.production` / `.env.staging` 는 `.gitignore` 로 커밋 제외(템플릿 `*.example` 만 커밋).
+
+## 운영 (부하테스트 · SLO · 백업)
+
+### 부하 테스트 (k6)
+`loadtest/k6-smoke.js` + `Actions → loadtest → Run workflow`(BASE_URL 입력).
+```bash
+# 로컬 실행
+k6 run -e BASE_URL=https://api.mediview.example.com -e TARGET_PATH=/actuator/health loadtest/k6-smoke.js
+# 알림 실검증(에러 유발): -e FAULT=1  → 5xx 발생 → Http5xxElevated / ErrorBudgetBurn 발동 확인
+```
+임계값: p95 < 500ms, 에러율 < 1%. 주입 후 Grafana(JVM/Business)·Alertmanager 로 지표/알림 검증.
+
+### SLO 에러버짓 번레이트 알림
+가용성 SLO 99%(버짓 1%) 기준 **다중창 번레이트** 알림:
+- `ErrorBudgetBurnFast` (5m+1h 창, ~14.4배) → critical(즉시 대응)
+- `ErrorBudgetBurnSlow` (30m+6h 창, ~6배) → warning(원인 조사)
+
+### mariadb 백업 (정기 덤프 + 보존)
+`db-backup` 컨테이너가 **하루 1회** `mariadb-dump | gzip` 을 `./backups` 에 저장하고,
+`BACKUP_RETENTION_DAYS`(기본 7) 초과분을 자동 삭제합니다.
+```bash
+# 수동 백업 1회
+docker compose exec db-backup sh /usr/local/bin/backup.sh
+# 복원
+gunzip -c backups/mediview-YYYYmmdd-HHMMSS.sql.gz | \
+  docker compose exec -T mariadb mariadb -u"$DB_USER" -p"$DB_PASSWORD" "$DB_NAME"
+```
+> `./backups` 는 `.gitignore` 처리. 실서비스는 오프사이트(S3 등) 동기화를 추가로 권장합니다.
