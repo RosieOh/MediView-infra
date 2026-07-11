@@ -29,3 +29,16 @@ limits_config:
   retention_period: 168h   # 7일
   ingestion_rate_mb: 8
   ingestion_burst_size_mb: 16
+
+# 로그 기반 알림(LogQL) → Alertmanager 로 전송
+ruler:
+  storage:
+    type: local
+    local:
+      directory: /etc/loki/rules
+  rule_path: /tmp/loki-rules
+  alertmanager_url: http://alertmanager:9093
+  enable_alertmanager_v2: true
+  ring:
+    kvstore:
+      store: inmemory

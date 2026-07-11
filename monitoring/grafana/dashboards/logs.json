@@ -1,0 +1,49 @@
+{
+  "uid": "mediview-logs",
+  "title": "MediView · Logs (Loki)",
+  "tags": ["mediview", "logs"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "time": { "from": "now-3h", "to": "now" },
+  "templating": { "list": [] },
+  "annotations": { "list": [] },
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "에러 로그 rate (service별)",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "fieldConfig": { "defaults": { "unit": "logs" }, "overrides": [] },
+      "options": {},
+      "targets": [
+        { "refId": "A", "datasource": { "type": "loki", "uid": "loki" }, "expr": "sum(rate({service=~\"backend|ai\"} |~ \"(?i)error|exception|traceback\" [5m])) by (service)", "legendFormat": "{{service}}" }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "전체 로그 volume (service별)",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "fieldConfig": { "defaults": { "unit": "logs" }, "overrides": [] },
+      "options": {},
+      "targets": [
+        { "refId": "A", "datasource": { "type": "loki", "uid": "loki" }, "expr": "sum(rate({container=~\".+\"}[5m])) by (service)", "legendFormat": "{{service}}" }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "logs",
+      "title": "최근 에러 로그",
+      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 8 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "options": { "showTime": true, "wrapLogMessage": true, "sortOrder": "Descending", "enableLogDetails": true },
+      "targets": [
+        { "refId": "A", "datasource": { "type": "loki", "uid": "loki" }, "expr": "{service=~\"backend|ai|admin|landing|nginx\"} |~ \"(?i)error|exception|traceback\"" }
+      ]
+    }
+  ]
+}

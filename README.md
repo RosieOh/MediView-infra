@@ -97,6 +97,21 @@ echo 'smtp-password'                       > monitoring/alertmanager/secrets/smt
 ```
 비-비밀 항목(smtp_smarthost, from, 채널 `#mediview-alerts`, 수신자)은 `alertmanager.yml` 에서 수정하세요.
 
+### 로그 대시보드 / 에러 급증 알림 (Loki)
+- 대시보드 **MediView · Logs (Loki)**: 서비스별 에러 rate·로그 volume·최근 에러 로그 뷰.
+- Loki ruler(`monitoring/loki/rules/fake/rules.yml`)가 **에러 로그 급증**(5분 rate>1/s, 1분 20건+)을 감지해 Alertmanager 로 알립니다.
+
+### 외부 URL/헬스 프로빙 (Blackbox exporter)
+- `blackbox` 컨테이너 + Prometheus `blackbox-http` job 이 외부 도메인을 프로빙합니다.
+- `monitoring/prometheus/prometheus.yml` 의 `targets` 를 실제 도메인으로 수정하세요.
+- 알림: `ProbeDown`(프로빙 실패), `ProbeSslExpiringSoon`(인증서 14일 내 만료).
+
+### Grafana 외부 노출 (nginx 서브도메인 + TLS)
+`grafana.mediview.example.com` 을 nginx 로 프록시합니다(모니터링 오버레이가 nginx 에 conf 를 얹음).
+1. DNS `grafana.*` → 서버, `init-letsencrypt.sh`(그라파나 도메인 포함) 로 인증서 발급.
+2. `stack/nginx.grafana.conf` 의 도메인, `GRAFANA_ROOT_URL`(compose env) 을 실제 값으로 수정.
+3. 인증은 Grafana 자체 로그인(admin) + TLS. → `docker compose -f compose.yaml -f monitoring/compose.monitoring.yml up -d`
+
 ## 스테이징 / 프로덕션 분리
 베이스 `compose.yaml` + 환경별 오버레이 + `--env-file` 로 분리합니다. 이미지 태그는 `IMAGE_TAG` 로 제어합니다.
 

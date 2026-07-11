@@ -39,3 +39,17 @@ groups:
         labels: { severity: warning }
         annotations:
           summary: "5xx 응답 비율 5% 초과 (5분+)"
+
+      - alert: ProbeDown
+        expr: probe_success == 0
+        for: 2m
+        labels: { severity: critical }
+        annotations:
+          summary: "외부 프로빙 실패: {{ $labels.instance }} (2분+)"
+
+      - alert: ProbeSslExpiringSoon
+        expr: (probe_ssl_earliest_cert_expiry - time()) < 86400 * 14
+        for: 1h
+        labels: { severity: warning }
+        annotations:
+          summary: "TLS 인증서 만료 임박(<14일): {{ $labels.instance }}"

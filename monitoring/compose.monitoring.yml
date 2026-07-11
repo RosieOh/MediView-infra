@@ -3,6 +3,11 @@
 name: mediview
 
 services:
+  # 메인 스택의 nginx 에 Grafana 서브도메인 conf 를 얹는다(오버레이 볼륨 병합).
+  nginx:
+    volumes:
+      - ./stack/nginx.grafana.conf:/etc/nginx/conf.d/grafana.conf:ro
+
   prometheus:
     image: prom/prometheus:v2.55.0
     restart: unless-stopped
@@ -23,6 +28,8 @@ services:
     environment:
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
       GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL:-https://grafana.mediview.example.com}
+      GF_SERVER_DOMAIN: ${GRAFANA_DOMAIN:-grafana.mediview.example.com}
     volumes:
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
       - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
@@ -36,6 +43,7 @@ services:
     command: -config.file=/etc/loki/config.yml
     volumes:
       - ./monitoring/loki/loki-config.yml:/etc/loki/config.yml:ro
+      - ./monitoring/loki/rules:/etc/loki/rules:ro
       - loki-data:/loki
     expose:
       - "3100"
@@ -82,6 +90,16 @@ services:
       - alertmanager-data:/alertmanager
     expose:
       - "9093"
+
+  blackbox:
+    image: prom/blackbox-exporter:v0.25.0
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/blackbox/blackbox.yml:/etc/blackbox_exporter/config.yml:ro
+    command:
+      - --config.file=/etc/blackbox_exporter/config.yml
+    expose:
+      - "9115"
 
 volumes:
   prometheus-data:

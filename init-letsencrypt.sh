@@ -7,7 +7,7 @@
 #   chmod +x init-letsencrypt.sh && ./init-letsencrypt.sh
 set -e
 
-DOMAINS="api.mediview.example.com admin.mediview.example.com mediview.example.com"
+DOMAINS="api.mediview.example.com admin.mediview.example.com mediview.example.com grafana.mediview.example.com"
 EMAIL="admin@mediview.example.com"     # 만료 알림 수신 이메일
 STAGING=0                              # 1 이면 스테이징(레이트리밋 회피 테스트용)
 

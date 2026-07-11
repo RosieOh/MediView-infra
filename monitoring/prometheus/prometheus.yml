@@ -30,3 +30,21 @@ scrape_configs:
     metrics_path: /actuator/prometheus
     static_configs:
       - targets: ["backend:8080"]
+
+  # 외부 URL/헬스 프로빙 (blackbox exporter 경유). targets 를 실제 도메인으로 수정.
+  - job_name: blackbox-http
+    metrics_path: /probe
+    params:
+      module: [http_2xx_tls]
+    static_configs:
+      - targets:
+          - https://mediview.example.com
+          - https://api.mediview.example.com/actuator/health
+          - https://admin.mediview.example.com
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox:9115
