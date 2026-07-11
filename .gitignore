@@ -1,5 +1,8 @@
 # 런타임/시크릿 (커밋 금지)
 .env
+.env.production
+.env.staging
+!*.example
 certs/
 certbot/conf/
 certbot/www/

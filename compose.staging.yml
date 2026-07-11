@@ -1,0 +1,19 @@
+# 스테이징 오버레이 (프로젝트명 분리로 프로덕션과 격리).
+#   docker compose --env-file .env.staging -f compose.yaml -f compose.staging.yml up -d
+# 주의: coturn(host 네트워크)·nginx(80/443)는 포트가 고정이라 같은 호스트에서
+#       프로덕션과 동시 실행 불가. 스테이징은 별도 호스트를 권장.
+name: mediview-staging
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  mariadb: { logging: *default-logging }
+  backend: { logging: *default-logging }
+  ai:      { logging: *default-logging }
+  admin:   { logging: *default-logging }
+  landing: { logging: *default-logging }
+  nginx:   { logging: *default-logging }

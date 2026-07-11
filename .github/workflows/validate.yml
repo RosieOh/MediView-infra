@@ -9,8 +9,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Validate compose
+      - name: Validate compose (base + overlays)
         run: |
           cp .env.example .env
           docker compose config >/dev/null
-          echo "docker compose config OK"
+          docker compose -f compose.yaml -f monitoring/compose.monitoring.yml config >/dev/null
+          docker compose --env-file .env.production.example -f compose.yaml -f compose.prod.yml config >/dev/null
+          docker compose --env-file .env.staging.example -f compose.yaml -f compose.staging.yml config >/dev/null
+          echo "all compose configs OK"

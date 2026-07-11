@@ -20,7 +20,7 @@ services:
       retries: 12
 
   backend:
-    image: ghcr.io/rosieoh/mediview-backend:latest
+    image: ghcr.io/rosieoh/mediview-backend:${IMAGE_TAG:-latest}
     restart: unless-stopped
     depends_on:
       mariadb:
@@ -40,7 +40,7 @@ services:
       - "8080"
 
   ai:
-    image: ghcr.io/rosieoh/mediview-ai:latest
+    image: ghcr.io/rosieoh/mediview-ai:${IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
@@ -48,13 +48,13 @@ services:
       - "8001"
 
   landing:
-    image: ghcr.io/rosieoh/mediview-landing:latest
+    image: ghcr.io/rosieoh/mediview-landing:${IMAGE_TAG:-latest}
     restart: unless-stopped
     expose:
       - "3000"
 
   admin:
-    image: ghcr.io/rosieoh/mediview-admin:latest
+    image: ghcr.io/rosieoh/mediview-admin:${IMAGE_TAG:-latest}
     restart: unless-stopped
     expose:
       - "3001"

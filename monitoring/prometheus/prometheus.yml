@@ -1,0 +1,24 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: cadvisor          # 컨테이너 CPU/메모리/네트워크
+    static_configs:
+      - targets: ["cadvisor:8080"]
+
+  - job_name: node-exporter     # 호스트 메트릭
+    static_configs:
+      - targets: ["node-exporter:9100"]
+
+  # 백엔드 애플리케이션 메트릭.
+  # 활성화하려면 백엔드에 actuator + micrometer-registry-prometheus 의존성을 추가하고
+  # management.endpoints.web.exposure.include=prometheus 로 노출해야 한다.
+  - job_name: backend
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ["backend:8080"]

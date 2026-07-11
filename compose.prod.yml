@@ -1,0 +1,17 @@
+# 프로덕션 오버레이.
+#   docker compose --env-file .env.production -f compose.yaml -f compose.prod.yml up -d
+name: mediview
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  mariadb: { logging: *default-logging }
+  backend: { logging: *default-logging }
+  ai:      { logging: *default-logging }
+  admin:   { logging: *default-logging }
+  landing: { logging: *default-logging }
+  nginx:   { logging: *default-logging }
