@@ -123,7 +123,7 @@ services:
     profiles: ["offsite"]
     depends_on: [db-backup]
     environment:
-      RCLONE_REMOTE: ${RCLONE_REMOTE:?rclone 원격 경로 예: s3remote:mediview-backups}
+      RCLONE_REMOTE: "${RCLONE_REMOTE:?rclone 원격 경로가 필요합니다 - 예 s3remote:mediview-backups}"
     volumes:
       - ./backup/rclone.conf:/config/rclone/rclone.conf:ro
       - ./backups:/data:ro
